@@ -1,0 +1,65 @@
+<!DOCTYPE html><html lang="en"><head><meta name="generator" content="Hexo 3.8.0"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description"><title>gitlab-ci之Gitlab-runner配置 | 骆天涯</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" type="text/css" href="//lib.baomitu.com/normalize/8.0.1/normalize.min.css"><link rel="stylesheet" type="text/css" href="//lib.baomitu.com/pure/1.0.0/pure-min.css"><link rel="stylesheet" type="text/css" href="//lib.baomitu.com/pure/1.0.0/grids-responsive-min.css"><link rel="stylesheet" href="//lib.baomitu.com/font-awesome/4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//lib.baomitu.com/jquery/3.4.0/jquery.min.js"></script><link rel="icon" mask sizes="any" href="/favicon.ico"><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">gitlab-ci之Gitlab-runner配置</h1><a id="logo" href="/.">骆天涯</a><p class="description">未来不迎 过往不恋</p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> Home</i></a><a href="/archives/"><i class="fa fa-archive"> Archive</i></a><a href="/about/"><i class="fa fa-user"> About</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">gitlab-ci之Gitlab-runner配置</h1><div class="post-meta">Apr 25, 2019<span> | </span><span class="category"><a href="/categories/测试技术/">测试技术</a></span></div><div class="clear"><div class="toc-article" id="toc"><div class="toc-title">Contents</div><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#持续集成"><span class="toc-number">1.</span> <span class="toc-text">持续集成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#持续集成工具"><span class="toc-number">2.</span> <span class="toc-text">持续集成工具</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#我的CI目标"><span class="toc-number">3.</span> <span class="toc-text">我的CI目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#gitlab-ci-runner的安装与配置"><span class="toc-number">4.</span> <span class="toc-text">gitlab-ci runner的安装与配置</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-使用Homebrew-安装gitlab-runner"><span class="toc-number">4.0.1.</span> <span class="toc-text">1. 使用Homebrew 安装gitlab-runner</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-注册runner"><span class="toc-number">4.0.2.</span> <span class="toc-text">2. 注册runner</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-run-single调试runner"><span class="toc-number">4.0.3.</span> <span class="toc-text">3. run-single调试runner</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-install-amp-start-service"><span class="toc-number">4.0.4.</span> <span class="toc-text">4. install &amp; start service</span></a></li></ol></li></ol></div></div><div class="post-content"><blockquote>
+<p><strong>目录</strong></p>
+<ol>
+<li>持续集成&amp;持续集成工具的介绍</li>
+<li>gitlab-ci runner的基本配置方法（mac版本）</li>
+</ol>
+</blockquote>
+<hr>
+<h3 id="持续集成"><a href="#持续集成" class="headerlink" title="持续集成"></a>持续集成</h3><p>CI，Continuous Integration，持续集成，是软件开发过程中一个非常重要的环节，在互联网敏捷开发的过程中，持续集成通常用来进行日常编译和自动化测试，来保证及时发现提交的问题，避免影响项目进度。</p>
+<p>通常持续集成的过程包括：</p>
+<ul>
+<li>提交（合并）代码</li>
+<li>编译</li>
+<li>测试</li>
+<li>发布</li>
+</ul>
+<p>不同的项目可能步骤有所不同，一些更加规范的公司的项目可能会加入静态代码检查，也有不少的小项目迫于进度和QA的工作压力，可能连测试过程都没有。<br><img src="http://upload-images.jianshu.io/upload_images/1554751-0f33a1ade0f89d64.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="GitLab CI/CD 转载自：https://docs.gitlab.com/ee/ci/"></p>
+<h3 id="持续集成工具"><a href="#持续集成工具" class="headerlink" title="持续集成工具"></a>持续集成工具</h3><p>CI工具有很多，目前最为常用应该是Jenkins。Jenkins通常包括一个master和很多个slave。master用于配置和组织节点、任务，slave则用来真正执行配置好的任务。因为用户群体的庞大，Jenkins上的各种插件，尤其是很多可视化插件都非常丰富，可以帮助很多新手快速配置所需的任务。</p>
+<p>gitlab-ci是git官方的持续集成工具，在Git工程管理页面上，也有专门的CI配置和展示页。<br><img src="https://upload-images.jianshu.io/upload_images/1554751-09abd6dac4ab429d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Git上CI/CD入口"></p>
+<p>Github上许多优秀的开源项目的Readme.md中，可以看到有如下图中“<strong>build|passing</strong>”的图标，就是通过markdown元素引用了当前版本CI/CD的结果的展示。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1554751-05c58e5560d5083e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="readme.md中引用CI/CD结果"></p>
+<p>随着代码更多地通过Git进行管理，gitlab-ci也成为了常见的CI平台。就我理解，gitlab-ci是一个简易版的jenkins，git服务器兼任了Jenkins master的功能，而我只需要准备好一个slave即可。而且，gitlab-ci的runner支持多重环境，尤其是Docker还有专属的配置支持。配置过程也非常的简便无脑，比起Jenkins的slave配置可以说是完胜了。</p>
+<p>之前我一直都是在公司的Jenkins服务平台上做CI（其实也没做过几个）的，由于Jenkins权限管控的问题，不方便在slave上尝试和排查环境问题（可以看我之前的oclint出现环境问题的排查）。刚好前段时间被其他小组的项目安利了gitlab-ci，因此就想学习一下和尝试一下。</p>
+<h3 id="我的CI目标"><a href="#我的CI目标" class="headerlink" title="我的CI目标"></a>我的CI目标</h3><blockquote>
+<p>“先给自己定个小目标”，赚他一个亿。阿不，能编译通过就好。</p>
+</blockquote>
+<p>因为我所在的项目比较复杂，多人（&gt;10）协同开发多个项目，这些项目的编译产物被同一个父工程所引用。但是开发的规范性不是很好，提交比较随意，又没有规范约束，提了多次仍然时不时出现提交错误或遗漏导致影响到其他同事工作进度的情况。</p>
+<p>我希望通过CI的方式，能够<strong>快速</strong>验证每次提交的可用性。当然如果后续的打包提交和自动化测试也能通过CI完成就更完美了。所以，先给自己定一个小目标，对所有相关工程的每次提交都进行打包，并返回正确的结果。</p>
+<p>当然啦，这个目标在本文中还没有被用到，后面我就会为这个“小目标”付出“惨重的代价”。</p>
+<h3 id="gitlab-ci-runner的安装与配置"><a href="#gitlab-ci-runner的安装与配置" class="headerlink" title="gitlab-ci runner的安装与配置"></a>gitlab-ci runner的安装与配置</h3><p>有兴趣了解原理的欢迎大家直接搜索gitlab-ci的官方文档去照着做。我这里提供mac上的安装攻略（因为有iOS项目），基本都是按照官方文档走的，也会分享由于太想当然踩到的几个坑。</p>
+<p>简单介绍一下runner。正如我前文所说，runner可以理解为是Jenkins的slave，机器（或docker）通过runner程序与git服务器进行通信，当有新的任务发布到当前runner时，runner会执行.gitlab-ci.yml所定义的CI指令。</p>
+<p>runner可以分为三种，Shared Runners，Specific Runners和Group Runners。Gitlab上可以使用官方的Shared Runners，创建Shared Runners需要Git管理员（不是仓库管理员）的权限。而Group Runners则是在Group中共享runner，需要Group的master以上的权限。Specific Runners是指定给当前项目使用的，这是大部分我们自己创建的runner的属性。具体的说明可以自行阅读参考文档[3]。</p>
+<h5 id="1-使用Homebrew-安装gitlab-runner"><a href="#1-使用Homebrew-安装gitlab-runner" class="headerlink" title="1. 使用Homebrew 安装gitlab-runner"></a>1. 使用Homebrew 安装gitlab-runner</h5><p>Homebrew是mac上一个近乎官方的安装工具了，直接执行就可以安装最新的稳定版gitlab-runner，我使用的是11.2.0。<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install gitlab-runner</span><br></pre></td></tr></table></figure></p>
+<p><em>注意！有些文章会告诉你紧接着执行gitlab-runner install，但这并不是安装gitlab-runner的指令，这是service的指令，不要执行，不要执行，不要执行，重要的事情说3遍，后续会解释原因</em></p>
+<h5 id="2-注册runner"><a href="#2-注册runner" class="headerlink" title="2. 注册runner"></a>2. 注册runner</h5><p>首先，假设你已经有了一个项目，并且需要至少master权限。这个项目可以在github，gitlab，或者私有git。我就以公司的私有git为例来说明了。</p>
+<p>打开<strong>settings-&gt;CI/CD</strong>页面，选择第二项<strong>Runners settings</strong>，左侧会显示与当前项目相关的参数。<br><img src="https://upload-images.jianshu.io/upload_images/1554751-8c9e46f0a5722c1a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="git_runner_settings.png"></p>
+<p>然后执行<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gitlab-runner register</span><br></pre></td></tr></table></figure></p>
+<p>依次输入项目中的参数，如下图（gitr是我设置的快捷输入，即为gitlab-runner）</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1554751-59ec3fd7a7aad3ab.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="register_runner.png"></p>
+<ul>
+<li>url：私有git的路径</li>
+<li>token：项目的token，用于关联runner和项目</li>
+<li>name：runner的名字，用于区分runner</li>
+<li>tags：用于匹配任务（jobs）和执行任务的设备（runners）</li>
+<li>executor：执行环境</li>
+</ul>
+<p>其中url和token在项目的CI配置页上可以找到。name只是用来区分两个runner，没有特殊的作用。tags这个属性，job和runner都有，用来匹配任务和执行任务的runner。job的tags属性下一篇会提到，也可以自行查阅.gitlab-ci.yml的语法。runner的tag可以有多个，注册时用逗号（comma）分隔即可。当某个job的tag是当前runner tags的一个子集时，这个job就可以被分配到当前runner上执行。</p>
+<blockquote>
+<p><strong>举个栗子</strong><br>runner的tag设为：ios, macos, android<br>job的tag设为：ios，或ios，macos就可以在这个runner上执行。<br>job的tag设为：linux，这个job就不会被分配到这个runner上。<br>job的tag设为：ios, linux，这个job也不会被分配到这个runner上。</p>
+</blockquote>
+<p>executor就是执行job的环境，通常我们都会选择Shell，如果有其他需要的也可以自行查阅文档。<br>需要注意的是，runner执行的环境是非常干净的，像类似ANDROID_HOME的变量都需要通过shell指令<code>export xxx=xxx</code>在执行时输入，而不是使用设备上的环境。</p>
+<p>当我们完成设置以后，可以通过<code>vi ~/.gitlab-runner/config.toml</code>打开runner的配置文件，刚才所填写的信息都会记录在其中。如果配置了多个runner，就会像图中一样，出现两个runners的section。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/1554751-77035d5049df2301.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="~/.gitlab-runner/config.toml"></p>
+<h5 id="3-run-single调试runner"><a href="#3-run-single调试runner" class="headerlink" title="3. run-single调试runner"></a>3. run-single调试runner</h5><p><code>gitlab-runner run-single</code>可以启动单个runner，并指定一些配置，用来作为调试。必须要指定的参数其实就是之前注册的时候需要填写的这些参数，其他的可以通过<code>gitlab-runner run-single -h</code>来查看。<br><img src="https://upload-images.jianshu.io/upload_images/1554751-1f7e0807ad461f06.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gitlab-runner run-single参数"></p>
+<h5 id="4-install-amp-start-service"><a href="#4-install-amp-start-service" class="headerlink" title="4. install &amp; start service"></a>4. install &amp; start service</h5><p>还记得第一步我说的不要执行gitlab-runner install吗，终于轮到他来表演了。runner作为等待被派发任务的设备，如果只能通过run或者run-single来前台执行就太蠢了。gitlab-runner也提供了service，用来后台响应git服务器的任务分发。</p>
+<p>在<strong>你希望runnerClone代码并执行CI操作的目录</strong>执行<code>gitlab-runner install</code>，service就安装成功了。</p>
+<p>会有人按照教程一顿操作（猛如虎）,install &amp; start，结果连git clone下来的目录在哪都找不到（嗯，说的就是我）。其实runner的workspace就在你执行gitlab-runner install的目录下。</p>
+<p>然后执行<code>gitlab-runner start</code>就启用了service。此命令的执行目录不会影响任何配置，并且每次开机默认都是自动启动service的，可以说非常的贴心。</p>
+<p>通过<code>gitlab-runner start</code>启动的service包括了在<code>config.toml</code>文件中配置的所有的runners。</p>
+<p>完成上述操作以后，git runner的配置就完成啦，下一章会通过一个例子简单讲一讲.gitlab-ci.yml文件的语法和一个小小的尝试</p>
+<hr>
+<p><strong>本系列文章列表</strong><br>(一) gitlab-ci的简易入门——runners（本文）<br>(二) gitlab-ci的简易入门——.gitlab-ci.yml<br>(三) 一个简单iOS工程的成功尝试<br>(四) 困境中用git-submodule和git-lfs优化工程<br>(五) 复杂工程的gitlab-ci初成</p>
+<hr>
+<p><strong>参考文章</strong><br>[1] <a href="https://docs.gitlab.com/ee/ci/quick_start/README.html" target="_blank" rel="noopener">gitlab-ci官方文档</a><br>[2] <a href="https://brew.sh/" target="_blank" rel="noopener">Homebrew安装</a><br>[3] <a href="https://docs.gitlab.com/ee/ci/runners/README.html" target="_blank" rel="noopener">gitlab-runner 文档</a></p>
+</div><div class="tags"><a href="/tags/测试-CI/">测试, CI</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"><input type="hidden" name="sitesearch" value="http://yoursite.com"></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> Categories</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/测试技术/">测试技术</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> Tags</i></div><div class="tagcloud"><a href="/tags/测试-CI/" style="font-size: 15px;">测试, CI</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> Recent</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2019/04/25/gitlab-ci之Gitlab-runner配置/">gitlab-ci之Gitlab-runner配置</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> Links</i></div><ul></ul><a href="https://www.jianshu.com/u/6db1f57003ad" title="我的简书主页" target="_blank">我的简书主页</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2019 <a href="/." rel="nofollow">骆天涯.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="//lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>
